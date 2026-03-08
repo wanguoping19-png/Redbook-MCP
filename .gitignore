@@ -1,0 +1,81 @@
+# 环境变量与敏感配置
+.env
+.env.local
+.env.*.local
+config.ini
+secrets.py
+credentials.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 虚拟环境
+venv/
+ENV/
+.env/
+.venv/
+env.bak/
+venv.bak/
+
+# IDE / 编辑器
+.vscode/
+.idea/
+*.xml
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# 日志与临时文件
+logs/
+*.log
+*.tmp
+temp/
+tmp/
+
+# 媒体文件（避免上传大图/视频）
+/images/
+/videos/
+*.jpg
+*.jpeg
+*.png
+*.mp4
+*.mov
+*.avi
+
+# 浏览器自动化缓存（Playwright / Selenium）
+/browsers/
+/playwright/
+/chrome_cache/
+/firefox_profile/
+
+# 自定义输出目录（如生成的报告、截图等）
+output/
+screenshots/
+reports/
+
+# 本地运行记录
+session.pkl
+cookies.pkl
+login_state.json
+
