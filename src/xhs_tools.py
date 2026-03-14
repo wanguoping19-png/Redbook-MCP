@@ -1,4 +1,25 @@
 import json
+import os
+import requests
+from setting import *
+from datetime import datetime
+def upload_image(file_name):
+     # 将“基础域名”替换为实际的域名
+    url = BASE_URL+"/api/v3/upload"
+    headers = {
+        'Authorization': 'Bearer {}'.format(IMAGE_TOKEN),  # 替换为实际的token
+    }
+    file_path = f'{QR_IMAGES}/{file_name}'  # 替换为实际文件路径
+
+    with open(file_path, 'rb') as file:
+        files = {'file': file}
+        response = requests.post(url, headers=headers, files=files)
+    # 输出响应内容和状态码
+    print("图片上传:",response.status_code)
+    print(response.text)
+    return response.json()
+
+
 def enable_xhr_interception(driver):
     """启用 CDP 网络监听，并设置缓冲区大小以支持 response body"""
     driver.execute_cdp_cmd('Network.enable', {
@@ -98,3 +119,29 @@ def get_xhr_logs_as_dict(driver):
         }
 
     return xhr_data
+
+
+def save_url_to_path(url):
+    header = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+    }
+    try:
+        resp = requests.get(url, headers=header, timeout=10)
+        resp.raise_for_status()
+    except requests.RequestException as e:
+        print(f"❌ 请求失败: {e}")
+        return None
+    # 确保目录存在
+    os.makedirs(PUSH_PATH, exist_ok=True)
+    filename = f"{int(datetime.now().timestamp() * 1000)}.png"
+    filepath = os.path.join(PUSH_PATH, filename)
+
+    with open(filepath, "wb") as f:
+        f.write(resp.content)
+
+    print(f"✅ 文件已保存: {filepath}")
+    return filepath
+
+
+
+
