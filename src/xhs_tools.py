@@ -143,5 +143,30 @@ def save_url_to_path(url):
     return filepath
 
 
+def generate_project_structure(path, indent=0):
+    """递归生成目录结构图"""
+    if not os.path.exists(path):
+        print(f"路径 '{path}' 不存在")
+        return
+    exclude = {'.git', '__pycache__', '.venv', '.idea','.DS_Store','.gitignore','.python-version'}
+    items = os.listdir(path)
+    items.sort()
+    for item in items:
+        if item not in exclude:
+            full_path = os.path.join(path, item)
+            if os.path.isdir(full_path):
+                print("│   " * indent + f"├── {item}/")
+                generate_project_structure(full_path, indent + 1)
+            else:
+                print("│   " * indent + f"├── {item}")
 
+
+def main():
+    project_path = "/Users/wanguoping/PycharmProjects/PythonProject/Redbook-MCP"  # 替换为你的项目路径
+    print(f"{os.path.basename(project_path)}/")
+    generate_project_structure(project_path)
+
+if __name__ == "__main__":
+    main()
+    pass
 
