@@ -46,7 +46,7 @@ async def get_qr_code():
         image_bytes = buffer.getvalue()
         data = base64.b64encode(image_bytes).decode('utf-8')
         ImageContent(type="image", data=data, mimeType="image/png")
-        return  ImageContent(type="image", data=data, mimeType="image/png")
+        return  result
     except Exception as error:
         raise error
 
