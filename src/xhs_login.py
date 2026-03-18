@@ -1,6 +1,5 @@
 import base64
-from playwright.async_api import  BrowserContext
-from datetime import datetime
+from playwright_stealth import Stealth
 from xhs_tools import *
 async def qrcode_login(context:BrowserContext) -> dict:
     """
@@ -15,7 +14,15 @@ async def qrcode_login(context:BrowserContext) -> dict:
 
     # 确保 QR_IMAGES 目录存在
     os.makedirs(QR_IMAGES, exist_ok=True)
+
+    # 进行防反爬
+    stealth = Stealth()
+
     page = await context.new_page()
+
+    await stealth.apply_stealth_async(page)
+
+
     try:
         # 访问小红书探索页
         await page.goto("https://www.xiaohongshu.com/explore", wait_until="domcontentloaded")

@@ -13,10 +13,11 @@ import shutil
 from xhs_login_status import get_login_status
 import glob
 from xhs_push import push_main
-from playwright.async_api import async_playwright, BrowserContext
+from xhs_search import *
 from xhs_login import qrcode_login
 from xhs_tools import *
 from setting import *
+import pandas as pd
 # Create an MCP server
 mcp = FastMCP("小红书自动化运营", json_response=True,host="0.0.0.0", port=8085)
 # 启动 Playwright
@@ -30,20 +31,9 @@ async def get_qr_code():
     :return:
     """
     global playwright, context  # 👈 关键：声明使用全局变量
-    playwright = await async_playwright().start()
-    # 启动 Chromium，启用持久化用户数据目录
-    context = await playwright.chromium.launch_persistent_context(
-        user_data_dir=CHROME_PROFILE,
-        headless=HEADLESS,  # 无头模式
-        viewport={"width": 1920, "height": 1080},
-        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        args=[
-            "--no-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-blink-features=AutomationControlled",
-        ],
-        ignore_https_errors=True,
-    )  # type: BrowserContext
+
+    playwright , context = await get_custom_context()
+
     try:
         # 2. 获取二维码
         result = await qrcode_login(context)
@@ -144,7 +134,68 @@ async def push_image_text(image_paths: list[str],title: str,content: str,tags: l
             "error": str(e)
         }
 
+@mcp.tool()
+async def get_keyword_content(words:str,item_type:str="",sort_type:str="",count:int=10) -> dict:
+    """
+     小红书关键词搜索
+    :param words: 关键词 必须
+    :param item_type: 笔记类型 不限为空，图文或者视频
+    :param sort_type: 按照综合， 点赞，评论，收藏筛选只能选其中一个
+    :param count: 筛选的数据量
+    :return:
+    """
+    if context:
+        await context.close()
+    if playwright:
+        await playwright.stop()
+    filter_map = {
+        "点赞": "like_count",
+        "评论": "comment_count",
+        "收藏": "collected_count",
+        "图文":"normal",
+        "视频":"video",
 
+    }
+    if not words:
+        return {
+            "code": 401,
+            "message": "请输入搜索词"
+        }
+    result = await get_xhs_search_keywords(words, item_type, sort_type,count)
+    data = []
+    for item in result["data"]:
+        if item.get("note_card"):
+            data.append({
+                "id": item["id"],
+                "xsec_token": item["xsec_token"],
+                "note_type": item["note_card"]["type"],
+                "user": item["note_card"]["user"]["nick_name"],
+                "display_title":item['note_card'].get('display_title',""),
+                "like_count": eval(item["note_card"]["interact_info"]["liked_count"]),
+                "comment_count": eval(item["note_card"]["interact_info"]["comment_count"]),
+                "shared_count": eval(item["note_card"]["interact_info"]["shared_count"]),
+                "collected_count":eval(item["note_card"]["interact_info"]["collected_count"])
+            })
+        continue
+    df = pd.DataFrame(data)
+    # 按条件筛选
+    sort_type = filter_map.get(sort_type,"")
+    if sort_type:
+        # 按条件排序降序
+        df = df.sort_values(by=sort_type, ascending=False)
+    # 按需取数
+    df = df.iloc[:count]
+    data = df.to_dict(orient="records")
+    result["data"] = data
+    return result
+@mcp.tool()
+async def get_normal_info(id:str,xsec_token:str) -> dict:
+    if context:
+        await context.close()
+    if playwright:
+        await playwright.stop()
+    resp = await get_article_info(id=id,xsec_token=xsec_token)
+    return resp
 @mcp.resource("greeting://{name}")
 def get_greeting(name: str) -> str:
     """Get a personalized greeting"""

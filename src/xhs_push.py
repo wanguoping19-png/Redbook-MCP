@@ -1,15 +1,17 @@
 import asyncio
-from typing import Any, Coroutine
-
-from playwright.async_api import async_playwright, BrowserContext
-from setting import *
-
-
+from playwright_stealth import Stealth
+from playwright.async_api import BrowserContext
+from xhs_tools import *
 
 # 图文发布
 async def push_pictures_content(context: BrowserContext,image_paths: list[str],title:str,content:str,tags:list[str]) -> dict:
     resp_messages = {"code": 200, "message": ""}
+    stealth = Stealth()
+
     page = await context.new_page()
+
+    await stealth.apply_stealth_async(page)
+
     await page.goto(
         "https://creator.xiaohongshu.com/publish/publish?source=official&from=menu&target=image",
         wait_until="domcontentloaded"
@@ -81,19 +83,7 @@ async def push_pictures_content(context: BrowserContext,image_paths: list[str],t
         return resp_messages
 
 async def push_main(image_paths: list[str],title: str,content: str,tags: list[str]) -> dict:
-    playwright = await async_playwright().start()
-    context = await playwright.chromium.launch_persistent_context(
-        user_data_dir=CHROME_PROFILE,
-        headless=HEADLESS,
-        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        args=[
-            "--no-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-blink-features=AutomationControlled",
-            "--start-maximized",  # ← 关键：启动即最大化（Windows/Linux）
-        ],
-        ignore_https_errors=True,
-    )
+    playwright, context = await get_custom_context()
     try:
 
         result:dict = await push_pictures_content(context,image_paths,title,content,tags)

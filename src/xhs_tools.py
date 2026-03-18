@@ -3,6 +3,7 @@ import os
 import requests
 from setting import *
 from datetime import datetime
+from playwright.async_api import async_playwright, Playwright, BrowserContext
 def upload_image(file_name):
      # 将“基础域名”替换为实际的域名
     url = BASE_URL+"/api/v3/upload"
@@ -161,12 +162,41 @@ def generate_project_structure(path, indent=0):
                 print("│   " * indent + f"├── {item}")
 
 
+
+async def get_custom_context() -> tuple[Playwright, BrowserContext]:
+    # 启动 playwright 驱动
+    playwright = await async_playwright().start()
+
+    try:
+        # 启动 Chromium，启用持久化用户数据目录
+        context = await playwright.chromium.launch_persistent_context(
+            user_data_dir=CHROME_PROFILE,
+            headless=HEADLESS,
+            viewport=None,
+            channel="chrome",  # ← 关键：自动定位 Chrome
+            # 建议：如果只是为了防检测，可以移除硬编码的 UA，
+            # Playwright 会自动生成匹配当前版本的 UA。
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            args=[
+                "--no-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-blink-features=AutomationControlled",  # 移除自动化标记
+            ],
+            ignore_https_errors=True,
+        )
+        return playwright, context
+    except Exception as e:
+        await playwright.stop()  # 发生异常时务必关闭驱动防止进程残留
+        raise e
+
+
+
 def main():
     project_path = "/Users/wanguoping/PycharmProjects/PythonProject/Redbook-MCP"  # 替换为你的项目路径
     print(f"{os.path.basename(project_path)}/")
     generate_project_structure(project_path)
 
 if __name__ == "__main__":
-    main()
+    # main()
     pass
 
