@@ -4,7 +4,7 @@ FROM python:3.11-slim
 # 设置工作目录
 WORKDIR /app
 
-# 安装系统依赖（如字体、libnss3 等，供 Chrome/chromedriver 使用）
+# 安装系统依赖（包括 Google Chrome 所需的库 + 字体、libnss3 等）
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         ca-certificates \
@@ -33,9 +33,17 @@ RUN apt-get update && \
         libxrandr2 \
         libxshmfence1 \
         wget \
+        gnupg \
         unzip \
         xvfb \
         && rm -rf /var/lib/apt/lists/*
+
+# 添加 Google Chrome APT 仓库并安装 Chrome
+RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome-keyring.gpg && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends google-chrome-stable && \
+    rm -rf /var/lib/apt/lists/*
 
 # 安装 uv（官方推荐方式）
 RUN pip install --no-cache-dir uv
@@ -57,11 +65,9 @@ WORKDIR /home/appuser/app
 COPY --chown=appuser:appuser src/ ./src/
 COPY --chown=appuser:appuser static/ ./static/
 
-# 设置 chromedriver 可执行权限（重要！）
-RUN chmod +x ./static/driver/chromedriver
 
 # 暴露端口（如果 MCP 服务监听端口，比如 8000）
-EXPOSE 8000
+EXPOSE 8085
 
 # 启动命令（根据你的主入口调整）
 CMD ["python", "src/xhs_mcp.py"]

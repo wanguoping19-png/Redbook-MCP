@@ -191,12 +191,3 @@ async def get_custom_context() -> tuple[Playwright, BrowserContext]:
 
 
 
-def main():
-    project_path = "/Users/wanguoping/PycharmProjects/PythonProject/Redbook-MCP"  # 替换为你的项目路径
-    print(f"{os.path.basename(project_path)}/")
-    generate_project_structure(project_path)
-
-if __name__ == "__main__":
-    # main()
-    pass
-

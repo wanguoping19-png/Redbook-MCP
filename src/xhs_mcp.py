@@ -25,7 +25,7 @@ mcp = FastMCP("小红书自动化运营", json_response=True,host="0.0.0.0", por
 playwright = None
 context = None
 @mcp.tool()
-async def get_qr_code():
+async def get_qr_code()->dict:
     """
     小红书二维码登陆
     :return:
@@ -190,6 +190,12 @@ async def get_keyword_content(words:str,item_type:str="",sort_type:str="",count:
     return result
 @mcp.tool()
 async def get_normal_info(id:str,xsec_token:str) -> dict:
+    """
+    获取图文详情页
+    :param id: 图文ID
+    :param xsec_token: 图文凭证
+    :return:
+    """
     if context:
         await context.close()
     if playwright:

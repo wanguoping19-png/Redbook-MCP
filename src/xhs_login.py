@@ -46,6 +46,7 @@ async def qrcode_login(context:BrowserContext) -> dict:
         except Exception as e:
             resp_messages["code"] = 201
             resp_messages["message"] = f"Base64 解码失败: {e}"
+            await context.close()
             return resp_messages
 
         # 生成文件名并保存
@@ -68,5 +69,6 @@ async def qrcode_login(context:BrowserContext) -> dict:
     except Exception as e:
         resp_messages["code"] = 400
         resp_messages["message"] = f"获取二维码失败: {str(e)}"
+        await context.close()
         return resp_messages
 
