@@ -2,13 +2,11 @@ import asyncio
 from playwright_stealth import Stealth
 from xhs_tools import *
 TARGET_API_URL = "https://edith.xiaohongshu.com/api/sns/web/v2/user/me"
-async def get_login_status() -> dict[str, str | int] | None:
+async def get_login_status(context:BrowserContext) -> dict[str, str | int] | None:
     resp_messages = {"code": 200, "message": ""}
-    playwright, context = await get_custom_context()
     # 进行防反爬
     stealth = Stealth()
     page = await context.new_page()
-
     await stealth.apply_stealth_async(page)
 
 
@@ -53,7 +51,5 @@ async def get_login_status() -> dict[str, str | int] | None:
         resp_messages["message"] = "用户为未登陆"
         resp_messages["error"] = str(e)
         return resp_messages
-    finally:
-        await context.close()
 
 

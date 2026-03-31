@@ -11,42 +11,64 @@ from mcp.server.fastmcp import FastMCP
 from mcp.types import ImageContent
 import shutil
 from xhs_login_status import get_login_status
-import glob
 from xhs_push import push_main
 from xhs_search import *
 from xhs_login import qrcode_login
 from xhs_tools import *
 from setting import *
 import pandas as pd
-# Create an MCP server
-mcp = FastMCP("小红书自动化运营", json_response=True,host="0.0.0.0", port=8085)
-# 启动 Playwright
-# Add an addition tool
-playwright = None
+# === 全局变量初始化 ===
 context = None
+playwright = None
+mcp = FastMCP("小红书自动化运营", json_response=True,host="0.0.0.0", port=8085) # Create an MCP server
+
 @mcp.tool()
-async def get_qr_code()->dict:
+async def close_context():
+    """
+    关闭小红书浏览器
+    :return: {"code": 200, "message": "ok"}
+    """
+    try:
+        await context.close()
+        await playwright.stop()
+        return {"code": 200, "message": "关闭ok"}
+    except Exception as e:
+        return {"code":200,"message":"未打开浏览器关闭异常"}
+
+@mcp.tool()
+async def up_context():
+    """
+    开启小红书浏览器
+    :return:{"code": 200, "message": "开启ok"}
+    """
+    global context ,playwright
+    if context:
+        await close_context()
+        playwright, context = await get_custom_context()
+        return {"code": 200, "message": "开启ok"}
+    else:
+        playwright,context = await get_custom_context()
+        return {"code": 200, "message": "开启ok"}
+
+@mcp.tool()
+async def get_qr_code():
     """
     小红书二维码登陆
-    :return:
     """
-    global playwright, context  # 👈 关键：声明使用全局变量
-
-    playwright , context = await get_custom_context()
-
     try:
         # 2. 获取二维码
-        result = await qrcode_login(context)
-        print(result)
-        files = glob.glob("../static/images/登陆二维码*.png")
-        img_path = files[0]
-        img = Image.open(img_path)
+        await qrcode_login(context)
+        png_files = glob.glob(os.path.join(QR_IMAGES, "*.png"))
+        if not png_files:
+            raise FileNotFoundError("指定目录中没有找到任何 PNG 图片。")
+        # 找出最新修改的文件
+        latest_file = max(png_files, key=os.path.getmtime)
+        img = Image.open(latest_file)
         buffer = BytesIO()
         img.save(buffer, format=img.format)
         image_bytes = buffer.getvalue()
         data = base64.b64encode(image_bytes).decode('utf-8')
-        ImageContent(type="image", data=data, mimeType="image/png")
-        return  result
+        return ImageContent(type="image", data=data, mimeType="image/png")
     except Exception as error:
         raise error
 
@@ -54,27 +76,18 @@ async def get_qr_code()->dict:
 @mcp.tool()
 async def get_status() -> dict:
     """检查登陆状态"""
-    if context:
-        await context.close()
-    if playwright:
-        await playwright.stop()
-    result:dict = await get_login_status()
+    result:dict = await get_login_status(context)
     return result
 
 
 @mcp.tool()
 async def delete_status() -> dict:
     """清除缓存,退出登陆"""
-    if context:
-        await context.close()
-    if playwright:
-        await playwright.stop()
     shutil.rmtree(CHROME_PROFILE)
     return {
         "code": 200,
         "message": "清除成功",
     }
-
 
 @mcp.tool()
 async def push_image_text(image_paths: list[str],title: str,content: str,tags: list[str]) -> dict:
@@ -96,10 +109,6 @@ async def push_image_text(image_paths: list[str],title: str,content: str,tags: l
                 "msg": ""
             }}
     """
-    if context:
-        await context.close()
-    if playwright:
-        await playwright.stop()
     try:
         paths = []
         try:
@@ -125,7 +134,7 @@ async def push_image_text(image_paths: list[str],title: str,content: str,tags: l
                 "code": 200,
                 "message": "内容超过900字"
             }
-        result:dict = await push_main(image_paths=paths, title=title, content=content, tags=tags)
+        result:dict = await push_main(context=context,image_paths=paths, title=title, content=content, tags=tags)
         return result
     except Exception as e:
         return {
@@ -137,17 +146,17 @@ async def push_image_text(image_paths: list[str],title: str,content: str,tags: l
 @mcp.tool()
 async def get_keyword_content(words:str,item_type:str="",sort_type:str="",count:int=10) -> dict:
     """
-     小红书关键词搜索
-    :param words: 关键词 必须
-    :param item_type: 笔记类型 不限为空，图文或者视频
+     小红书关键词搜索文章
+    :param words: 关键词
+    :param item_type: 笔记类型 值为图文or者视频
     :param sort_type: 按照综合， 点赞，评论，收藏筛选只能选其中一个
-    :param count: 筛选的数据量
-    :return:
+    :param count: 请求数据量
+    :return:  {
+        "code":200,
+        "data":[],
+        "message":"",
+    }
     """
-    if context:
-        await context.close()
-    if playwright:
-        await playwright.stop()
     filter_map = {
         "点赞": "like_count",
         "评论": "comment_count",
@@ -161,7 +170,7 @@ async def get_keyword_content(words:str,item_type:str="",sort_type:str="",count:
             "code": 401,
             "message": "请输入搜索词"
         }
-    result = await get_xhs_search_keywords(words, item_type, sort_type,count)
+    result = await get_xhs_search_keywords(context,words, item_type, sort_type,count)
     data = []
     for item in result["data"]:
         if item.get("note_card"):
@@ -194,30 +203,15 @@ async def get_normal_info(id:str,xsec_token:str) -> dict:
     获取图文详情页
     :param id: 图文ID
     :param xsec_token: 图文凭证
-    :return:
+    :return:{
+        "code": 200,
+        "text": "",
+        "message": "",
+    }
     """
-    if context:
-        await context.close()
-    if playwright:
-        await playwright.stop()
     resp = await get_article_info(id=id,xsec_token=xsec_token)
     return resp
-@mcp.resource("greeting://{name}")
-def get_greeting(name: str) -> str:
-    """Get a personalized greeting"""
-    return f"Hello, {name}!"
 
-# Add a prompt
-@mcp.prompt()
-def greet_user(name: str, style: str = "friendly") -> str:
-    """Generate a greeting prompt"""
-    styles = {
-        "friendly": "Please write a warm, friendly greeting",
-        "formal": "Please write a formal, professional greeting",
-        "casual": "Please write a casual, relaxed greeting",
-    }
-
-    return f"{styles.get(style, styles['friendly'])} for someone named {name}."
 
 
 # Run with streamable HTTP transport

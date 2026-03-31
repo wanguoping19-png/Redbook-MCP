@@ -188,6 +188,8 @@ async def get_custom_context() -> tuple[Playwright, BrowserContext]:
     except Exception as e:
         await playwright.stop()  # 发生异常时务必关闭驱动防止进程残留
         raise e
+if __name__ == "__main__":
+    generate_project_structure("/Users/wanguoping/PycharmProjects/PythonProject/Redbook-MCP")
 
 
 

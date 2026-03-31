@@ -37,6 +37,7 @@ async def qrcode_login(context:BrowserContext) -> dict:
         if not src or not src.startswith("data:image"):
             resp_messages["code"] = 201
             resp_messages["message"] = "二维码 src 不是有效的 data URL"
+
             return resp_messages
 
         # 分离 Base64 数据
@@ -46,7 +47,6 @@ async def qrcode_login(context:BrowserContext) -> dict:
         except Exception as e:
             resp_messages["code"] = 201
             resp_messages["message"] = f"Base64 解码失败: {e}"
-            await context.close()
             return resp_messages
 
         # 生成文件名并保存
@@ -57,10 +57,9 @@ async def qrcode_login(context:BrowserContext) -> dict:
         with open(image_path, "wb") as f:
             f.write(image_data)
         print(f"✅ 二维码已保存: {image_path}")
-
         # 将图片上传到在线图床
-        url_data = upload_image(image_name)
-        resp_messages["image_url"] = url_data["data"]["url"]
+        # url_data = upload_image(image_name)
+        # resp_messages["image_url"] = url_data["data"]["url"]
         resp_messages["message"] = "登陆二维码保存成功"
         # 如果你希望外部能继续使用这个浏览器（比如轮询登录状态），不要关闭
         # 此处不关闭 browser，由调用方决定何时关闭
@@ -69,6 +68,5 @@ async def qrcode_login(context:BrowserContext) -> dict:
     except Exception as e:
         resp_messages["code"] = 400
         resp_messages["message"] = f"获取二维码失败: {str(e)}"
-        await context.close()
         return resp_messages
 
