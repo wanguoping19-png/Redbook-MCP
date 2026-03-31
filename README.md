@@ -88,7 +88,7 @@ npx -y @modelcontextprotocol/inspector
 ### 1. 登录功能
 
 #### 1.1 登录状态查询  
-<video src="./演示视频/二维码登陆.mp4" controls></video>
+<video src="https://www.douyin.com/jingxuan?modal_id=7622979898851773730" controls></video>
 #### 1.2 二维码登录  
 📸 *视频占位：展示生成二维码、用户扫码、自动完成登录流程*
 
