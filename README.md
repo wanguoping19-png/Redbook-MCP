@@ -79,7 +79,8 @@ npx -y @modelcontextprotocol/inspector
 
 在 Inspector UI 中连接地址：`http://localhost:8085/mcp`
 
-> **图片占位**：Inspector 连接成功界面截图
+> ![输入图片说明](%E6%BC%94%E7%A4%BA%E8%A7%86%E9%A2%91/image.png)
+Inspector 连接成功界面截图
 
 ---
 
@@ -89,16 +90,17 @@ npx -y @modelcontextprotocol/inspector
 
 #### 1.1 登录状态查询 
 
-<video src="https://www.douyin.com/jingxuan?modal_id=7622979898851773730" controls></video>
+
 
 #### 1.2 二维码登录  
-📸 *视频占位：展示生成二维码、用户扫码、自动完成登录流程*
+📸 展示生成二维码、用户扫码、自动完成登录流程*
+
 
 ### 2. 搜索词功能  
-🔍 *视频占位：输入关键词（如“春日穿搭”），返回相关笔记列表或热度数据*
+🔍 输入关键词（如“春日穿搭”），返回相关笔记列表或热度数据*
 
 ### 3. 图文发布功能  
-🖼️ *视频占位：上传多张图片 + 文案，自动发布到小红书账号*
+🖼️ 上传多张图片 + 文案，自动发布到小红书账号*
 
 ---
 
