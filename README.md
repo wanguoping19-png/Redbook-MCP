@@ -88,8 +88,7 @@ npx -y @modelcontextprotocol/inspector
 ### 1. 登录功能
 
 #### 1.1 登录状态查询  
-📹 *视频占位：展示调用 `xhs_login_status` 返回当前登录状态*
-
+<video src="./我的演示视频.mp4" controls></video>
 #### 1.2 二维码登录  
 📸 *视频占位：展示生成二维码、用户扫码、自动完成登录流程*
 
