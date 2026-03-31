@@ -53,15 +53,7 @@ logs/
 temp/
 tmp/
 
-# 媒体文件（避免上传大图/视频）
-/images/
-/videos/
-*.jpg
-*.jpeg
-*.png
-*.mp4
-*.mov
-*.avi
+
 
 # 浏览器自动化缓存（Playwright / Selenium）
 /browsers/

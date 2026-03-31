@@ -2,7 +2,7 @@
 
 这是一个基于 **Python-MCP** 与 **Playwright** 的小红书（Xiaohongshu / Redbook）自动化工具，支持登录、图文发布、关键词搜索等核心功能。
 
-- **python-mcp**: [https://github.com/modelcontextprotocol/python-sdk](https://github.com/modelcontextprotocol/python-sdk)  
+- **python-mcp**: [https://github.com/modelcontextprotocol/python-sdk](https://github.com/modelcontextprotocol/python-sdk)
 - **playwright**: [https://playwright.dev/docs/intro](https://playwright.dev/docs/intro)
 
 ---
@@ -65,6 +65,7 @@ docker run -d \
 ```
 
 > **说明**：
+>
 > - `8085` 端口为 MCP 服务暴露端口
 > - `./share_data` 用于持久化数据（如 cookies、截图等）
 > - `--network n8n-network` 可选，用于与 n8n 等编排工具集成
@@ -79,8 +80,9 @@ npx -y @modelcontextprotocol/inspector
 
 在 Inspector UI 中连接地址：`http://localhost:8085/mcp`
 
-> ![输入图片说明](%E6%BC%94%E7%A4%BA%E8%A7%86%E9%A2%91/image.png)
-Inspector 连接成功界面截图
+![image.png](assets/image.png)
+
+> Inspector 连接成功界面截图
 
 ---
 
@@ -88,21 +90,24 @@ Inspector 连接成功界面截图
 
 ### 1. 登录功能
 
-#### 1.1 登录状态查询 
+#### 1.1 登录状态查询
 
+![.gif](assets/登陆状态检查.gif)
 
+#### 1.2 二维码登录
 
-#### 1.2 二维码登录  
 📸 展示生成二维码、用户扫码、自动完成登录流程*
 
+![.gif](assets/二维码登陆.gif)
 
-### 2. 搜索词功能  
+### 2. 搜索词功能
+
 🔍 输入关键词（如“春日穿搭”），返回相关笔记列表或热度数据*
 
-### 3. 图文发布功能  
+### 3. 图文发布功能
+
 🖼️ 上传多张图片 + 文案，自动发布到小红书账号*
 
 ---
 
 > 💡 本工具适用于自动化内容运营、竞品监控、批量发布等场景，**请遵守小红书平台规则，避免高频操作导致封号**。
-
